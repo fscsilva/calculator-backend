@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: calculator-backend
+  jpa:
+    hibernate.ddl-auto: none
+    hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    generate-ddl: false
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/calculatordb
+    username: admin
+    password: admin
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      auto-commit: true
+      jdbc-url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/calculatordb
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    rest:
+      basePath: /v1/admin
+
+rest-template:
+  connectTimeout: 120000
+  readTimeout: 300000
+
+server:
+  servlet:
+    context-path: /api/calculator
+  port: 8080
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  health:
+    binders:
+      enabled: false

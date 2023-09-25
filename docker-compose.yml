@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    image: mysql:8.0.28
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_USER: admin
+      MYSQL_DATABASE: calculatordb
+    ports:
+      - "3306:3306"
+    networks:
+      springboot-mysql-net:
+    restart: always
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:mysql://mysqldb?allowPublicKeyRetrieval=true&useSSL=false -schemas=calculatordb -user=admin -password=admin -connectRetries=60 migrate
+    volumes:
+      - ./flyway/migration:/flyway/sql
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      adminer:
+        condition: service_started
+    networks:
+      springboot-mysql-net:
+    restart: always
+
+  calculator-backend:
+    container_name: calculator-backend
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      MYSQL_HOST: mysqldb
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      adminer:
+        condition: service_started
+      flyway:
+        condition: service_started
+    networks:
+      springboot-mysql-net:
+    restart: always
+
+  adminer:
+    image: adminer
+    ports:
+      - "8000:8080"
+    networks:
+      springboot-mysql-net:
+    restart: always
+
+networks:
+  springboot-mysql-net:
